@@ -23,7 +23,6 @@ def subscribe(subscriber: str) -> events.EventQueue:
 def get_subscribers() -> List[str]:
     """Get the list of subscribers to Scheduling Block Instance (SBI) events.
 
-
     Returns:
         List[str], list of subscriber names.
 

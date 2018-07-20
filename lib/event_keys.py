@@ -27,7 +27,7 @@ def subscribers(aggregate_type: str) -> str:
 
 
 def published(aggregate_type: str, subscriber: str) -> str:
-    """Return db key for subscriber published event ids
+    """Return db key for subscriber published event ids.
 
     Args:
         aggregate_type (str): Type of aggregate.
@@ -41,7 +41,7 @@ def published(aggregate_type: str, subscriber: str) -> str:
 
 
 def data(aggregate_type: str, subscriber: str) -> str:
-    """Return the db key for subscriber event data
+    """Return the db key for subscriber event data.
 
     Args:
          aggregate_type (str): Type of aggregate

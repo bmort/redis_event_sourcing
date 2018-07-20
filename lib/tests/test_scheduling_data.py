@@ -8,9 +8,6 @@ with Docker using the command:
     docker run -d -p 6379:6379 --name=config_db redis:4.0.6-alpine
 
 """
-import json
-from random import randint
-
 import redis
 
 from ..generate import generate_sbi_config
@@ -25,7 +22,7 @@ def test_add_sbi():
 
     print('')
     pb_event_queue = events.subscribe('pb', 'test')
-    sbi_event_queue = events.subscribe('sbi', 'test')
+    # sbi_event_queue = events.subscribe('sbi', 'test')
 
     sbi_config = generate_sbi_config(num_pbs=4)
     # print(json.dumps(sbi_config, indent=2))

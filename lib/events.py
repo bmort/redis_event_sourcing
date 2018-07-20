@@ -38,14 +38,14 @@ class Event:
         self.data = event_data
 
     def __str__(self):
-        """Used to generate the 'informal' string representation.
+        """Generate the 'informal' string representation.
 
-         Used by the print statement.
-         """
+        Used by the print statement.
+        """
         return str(dict(id=self.id, data=self.data))
 
     def __repr__(self):
-        """Generates the 'official' string representation.
+        """Generate the 'official' string representation.
 
         eg. used when printing lists of objects.
         """
@@ -69,9 +69,9 @@ class Event:
 class EventQueue:
     """Event queue class.
 
-     Used to poll for subscribed events and query the list of published
-     and active events for a given aggregate type and subscriber.
-     """
+    Used to poll for subscribed events and query the list of published
+    and active events for a given aggregate type and subscriber.
+    """
 
     def __init__(self, aggregate_type: str, subscriber: str):
         """Initialise the event queue.
@@ -100,6 +100,7 @@ class EventQueue:
 
         Returns:
               Event or None
+
         """
         message = self._queue.get_message()
         if message and message['type'] == 'message':
@@ -162,6 +163,7 @@ class EventQueue:
 
         Returns:
             Event, (Active) event object
+
         """
         event_id = DB.rpoplpush(src=self._pub_key, dst=self._active_key)
         event_data = ast.literal_eval(DB.hget(self._data_key, event_id))
@@ -278,7 +280,8 @@ def _update_aggregate(pipe: redis.client.StrictPipeline, aggregate_key: str,
     """Update the aggregate's events list and events data.
 
     - Adds the event Id to the list of events for the aggregate.
-    - Adds the event data to the hash of aggregate event data keyed by event id.
+    - Adds the event data to the hash of aggregate event data keyed by event
+      id.
 
     Args:
         pipe (redis.client.StrictPipeline): Redis transaction group object.
@@ -312,5 +315,3 @@ def _get_event_id(aggregate_type: str) -> str:
     if count is None:
         count = 0
     return '{}_event_{:08d}'.format(aggregate_type, int(count))
-
-

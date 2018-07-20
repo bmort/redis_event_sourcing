@@ -27,4 +27,4 @@ before_script:
   - docker run -d -p 6379:6379 --name=config_db redis:4.0.6-alpine
 
 script:
-  - pytest -s -v --codestyle --docstyle --pylint .
+  - pytest -s -v --codestyle --docstyle --pylint --pylint-rcfile=./.pylintrc .

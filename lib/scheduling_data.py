@@ -9,7 +9,6 @@ import ast
 
 import redis
 
-
 from .events import publish
 
 
@@ -24,7 +23,7 @@ DB = redis.StrictRedis(decode_responses=True)
 
 
 def get_sbi_key(sbi_id: str) -> str:
-    """Return a Scheduling Block Instance db key
+    """Return a Scheduling Block Instance db key.
 
     Args:
         sbi_id (str): Scheduling block instance id
@@ -37,7 +36,7 @@ def get_sbi_key(sbi_id: str) -> str:
 
 
 def get_pb_key(pb_id: str) -> str:
-    """Return a Processing Block db key
+    """Return a Processing Block db key.
 
     Args:
         pb_id (str): Processing Block instance id
@@ -55,7 +54,7 @@ def add_sbi(sbi_config: dict):
     Args:
         sbi_config (dict): Scheduling Block Instance configuration dictionary.
     """
-    # TODO(BM) Validate dictonary against schema.
+    # TODO(BM) Validate dictionary against schema.
 
     sbi_pb_config = sbi_config['processing_block_data']
     del sbi_config['processing_block_data']
@@ -71,7 +70,7 @@ def add_sbi(sbi_config: dict):
     publish('sbi', sbi_key, 'created')
 
     # Loop over PBs in the SBI and add them to the db
-    for pb_id, pb_config in sbi_pb_config.items():
+    for _, pb_config in sbi_pb_config.items():
 
         # Store the SBI key in the PB for back-reference.
         pb_config['sbi_id'] = sbi_key
@@ -86,7 +85,7 @@ def add_sbi(sbi_config: dict):
 
 
 def get_sbi_data_value(sbi_id: str, key: str):
-    """Get the value of an SBI data field converted back to a Python Type"""
+    """Get the value of an SBI data field converted back to a Python type."""
     return ast.literal_eval(DB.hget(get_sbi_key(sbi_id), key))
 
 
@@ -104,7 +103,7 @@ def set_sbi_status(sbi_id: str, value: str):
 
 
 def cancel_sbi(sbi_id):
-    """Cancels a SBI.
+    """Cancel a SBI.
 
     Args:
         sbi_id (str): the SBI Id
@@ -117,4 +116,3 @@ def cancel_sbi(sbi_id):
     sbi_pb_ids = get_sbi_data_value(sbi_id, 'processing_block_ids')
     for pb_id in sbi_pb_ids:
         publish('pb', get_pb_key(pb_id), 'cancelled')
-
