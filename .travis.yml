@@ -1,0 +1,29 @@
+sudo: required
+
+language: python
+
+services:
+  - docker
+
+python:
+  - "3.6"
+
+cache: pip
+
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get -qq update
+  - sudo apt-get install -y docker-ce
+  - pip install pytest>=3.5.1
+  - pip install pytest-pylint>=0.9.0
+  - pip install pytest-codestyle>=1.2.2
+  - pip install pytest-docstyle>=1.3.2
+  - pip install redis>=2.10.6
+  - pip install jsonschema>=2.6.0
+
+before_script:
+  - docker run -d -p 6379:6379 --name=config_db redis:4.0.6-alpine
+
+script:
+  - pytest -s -v --codestyle --docstyle --pylint .
