@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/bmort/redis_event_sourcing.svg?branch=master)](https://travis-ci.com/bmort/redis_event_sourcing)
+
 # Experimental SIP EC configuration database events library
 
 This builds an API around ideas from the Event Sourcing pattern
