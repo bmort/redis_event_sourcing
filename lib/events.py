@@ -58,12 +58,17 @@ class Event:
         This should be called when processing of the event by the handler is
         complete.
         """
-        pipe = DB.pipeline()
-        pipe.lrem(keys.active(self.aggregate_type, self.subscriber), 0,
-                  self.id)
-        pipe.rpush(keys.history(self.aggregate_type, self.subscriber),
-                   self.id)
-        pipe.execute()
+        # pipe = DB.pipeline()
+        # pipe.lrem(keys.active(self.aggregate_type, self.subscriber), 0,
+        #           self.id)
+        DB.lrem(keys.active(self.aggregate_type, self.subscriber), 0, self.id)
+        # TODO(BM) Consider not adding to history and just removing the event
+        # as a copy is also always stored against the aggregate so the
+        # history is there too. If this is the case dont need an atomic
+        # transaction pipe as can do this in a single transaction.
+        # pipe.rpush(keys.history(self.aggregate_type, self.subscriber),
+        #            self.id)
+        # pipe.execute()
 
 
 class EventQueue:
@@ -277,7 +282,7 @@ def _publish_to_subscribers(pipe: redis.client.StrictPipeline,
 
 def _update_aggregate(pipe: redis.client.StrictPipeline, aggregate_key: str,
                       event_id: str, event_data: dict):
-    """Update the aggregate's events list and events data.
+    """Update the events list and events data for the aggregate.
 
     - Adds the event Id to the list of events for the aggregate.
     - Adds the event data to the hash of aggregate event data keyed by event

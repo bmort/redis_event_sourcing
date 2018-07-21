@@ -3,4 +3,4 @@ disable=fixme
 
 [BASIC]
 
-good-names=id
+good-names=id, i
