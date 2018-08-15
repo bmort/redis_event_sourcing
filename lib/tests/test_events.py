@@ -51,6 +51,32 @@ def test_events():
     assert not active_events
 
 
+def test_events_with_callback():
+    """Test subscribing to events with a callback handler."""
+    def callback_handler(message):
+        """Event callback handler."""
+        print('EVENT CALLBACK!! ', message['data'])
+
+    events.DB.flushall()
+    aggregate_type = 'test'
+    subscriber = 'test_subscriber'
+    event_type = 'test_event'
+    aggregate_key = 'test:01'
+
+    # Subscribe to the 'pb' aggregate events with the 'test' subscriber
+    event_queue = events.subscribe(aggregate_type, subscriber,
+                                   callback_handler)
+    assert subscriber in events.get_subscribers(aggregate_type)
+
+    # Publish an event.
+    for _ in range(10):
+        events.publish(aggregate_type, aggregate_key,
+                       event_type=event_type, event_data={})
+    thread = event_queue.pubsub().run_in_thread(sleep_time=0.01)
+    time.sleep(0.5)
+    thread.stop()
+
+
 def test_events_recovery():
     """Test event recovery, eg. after a subscriber service crash."""
     events.DB.flushall()

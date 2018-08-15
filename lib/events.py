@@ -16,7 +16,7 @@ A higher level events API is also provided in the modules `pb_events.py` and
 `sbi_events.py`.
 
 """
-from typing import List
+from typing import List, Callable
 import ast
 import redis
 
@@ -78,7 +78,8 @@ class EventQueue:
     and active events for a given aggregate type and subscriber.
     """
 
-    def __init__(self, aggregate_type: str, subscriber: str):
+    def __init__(self, aggregate_type: str, subscriber: str,
+                 callback_handler: Callable = None):
         """Initialise the event queue.
 
         Subscribes to Redis pub/sub events of the given aggregate type.
@@ -89,12 +90,19 @@ class EventQueue:
 
         """
         self._queue = DB.pubsub()
-        self._queue.subscribe(aggregate_type)
+        if callback_handler is None:
+            self._queue.subscribe(aggregate_type)
+        else:
+            self._queue.subscribe(**{aggregate_type: callback_handler})
         self._pub_key = keys.published(aggregate_type, subscriber)
         self._data_key = keys.data(aggregate_type, subscriber)
         self._active_key = keys.active(aggregate_type, subscriber)
         self._aggregate_type = aggregate_type
         self._subscriber = subscriber
+
+    def pubsub(self):
+        """Return the Redis pubsub object."""
+        return self._queue
 
     def get(self):
         """Get the latest event from the queue.
@@ -176,7 +184,8 @@ class EventQueue:
                      event_data)
 
 
-def subscribe(aggregate_type: str, subscriber: str) -> EventQueue:
+def subscribe(aggregate_type: str, subscriber: str,
+              callback_handler: Callable = None) -> EventQueue:
     """Subscribe to the specified aggregate type.
 
     Returns an event queue object which can be used to query events
@@ -185,6 +194,7 @@ def subscribe(aggregate_type: str, subscriber: str) -> EventQueue:
     Args:
         aggregate_type (str): Aggregate type
         subscriber (str): Subscriber name
+        callback_hander ():
 
     Returns:
         EventQueue, event queue object.
@@ -193,7 +203,7 @@ def subscribe(aggregate_type: str, subscriber: str) -> EventQueue:
     key = keys.subscribers(aggregate_type)
     DB.lrem(key, 0, subscriber)
     DB.lpush(key, subscriber)
-    return EventQueue(aggregate_type, subscriber)
+    return EventQueue(aggregate_type, subscriber, callback_handler)
 
 
 def get_subscribers(aggregate_type: str) -> List[str]:
