@@ -51,16 +51,31 @@ def test_events():
     assert not active_events
 
 
+# Global counter to verify the callback function was triggered the correct
+# number of times.
+CALLBACK_EVENT_COUNT = 0
+
+
 def test_events_with_callback():
     """Test subscribing to events with a callback handler."""
     def callback_handler(message):
         """Event callback handler."""
-        print('EVENT CALLBACK!! ', message['data'])
+        global CALLBACK_EVENT_COUNT  # pylint: disable=global-statement
+        CALLBACK_EVENT_COUNT += 1
+        assert 'callback_test_event_' in message['data']
+        # print('EVENT CALLBACK!! ', message['data'], CALLBACK_EVENT_COUNT)
+
+    def watcher_function(queue: events.EventQueue, timeout: float):
+        """Function to monitor for events."""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            queue.get()
+            time.sleep(0.1)
 
     events.DB.flushall()
-    aggregate_type = 'test'
+    aggregate_type = 'callback_test'
     subscriber = 'test_subscriber'
-    event_type = 'test_event'
+    event_type = 'test'
     aggregate_key = 'test:01'
 
     # Subscribe to the 'pb' aggregate events with the 'test' subscriber
@@ -68,13 +83,25 @@ def test_events_with_callback():
                                    callback_handler)
     assert subscriber in events.get_subscribers(aggregate_type)
 
-    # Publish an event.
+    # Test using a custom watcher thread for the event loop.
+    print('')
+    thread = Thread(target=watcher_function, args=(event_queue, 2.0,),
+                    daemon=False)
+    thread.start()
     for _ in range(10):
         events.publish(aggregate_type, aggregate_key,
                        event_type=event_type, event_data={})
+    thread.join()
+    assert CALLBACK_EVENT_COUNT == 10
+
+    # Test using the provided pubsub subscriber thread
     thread = event_queue.pubsub().run_in_thread(sleep_time=0.01)
+    for _ in range(10):
+        events.publish(aggregate_type, aggregate_key,
+                       event_type=event_type, event_data={})
     time.sleep(0.5)
     thread.stop()
+    assert CALLBACK_EVENT_COUNT == 20
 
 
 def test_events_recovery():
