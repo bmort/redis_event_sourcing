@@ -1,5 +1,8 @@
 # coding=utf-8
-"""Test of events interface."""
+"""Test of the Configuration Database events interface.
+
+This is the lower level events API used for PB and SBI events.
+"""
 import time
 from threading import Thread
 
@@ -84,7 +87,6 @@ def test_events_with_callback():
     assert subscriber in events.get_subscribers(aggregate_type)
 
     # Test using a custom watcher thread for the event loop.
-    print('')
     thread = Thread(target=watcher_function, args=(event_queue, 2.0,),
                     daemon=False)
     thread.start()
