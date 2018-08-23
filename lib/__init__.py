@@ -1,2 +1,2 @@
 # coding=utf-8
-"""Experimental EC config db supporing Event Sourcing."""
+"""Experimental EC Configuration db including Event Sourcing."""
